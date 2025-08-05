@@ -1,0 +1,16 @@
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\bin\Debug\net8.0\BTCPayServer.Plugins.Monero.json
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\bin\Debug\net8.0\BTCPayServer.Plugins.Monero.deps.json
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\bin\Debug\net8.0\BTCPayServer.Plugins.Monero.dll
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\bin\Debug\net8.0\BTCPayServer.Plugins.Monero.xml
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.csproj.AssemblyReference.cache
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.GeneratedMSBuildEditorConfig.editorconfig
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.AssemblyInfoInputs.cache
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.AssemblyInfo.cs
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.csproj.CoreCompileInputs.cache
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.RazorAssemblyInfo.cache
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.RazorAssemblyInfo.cs
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.sourcelink.json
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.dll
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\refint\BTCPayServer.Plugins.Monero.dll
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\BTCPayServer.Plugins.Monero.xml
+E:\Crypto\btcpayserver-monero-plugin\Plugins\Monero\obj\Debug\net8.0\ref\BTCPayServer.Plugins.Monero.dll
