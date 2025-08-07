@@ -52,7 +52,7 @@ namespace BTCPayServer.Plugins.Zano.RPC
             {
                 rawResult.EnsureSuccessStatusCode();
             }
-            catch (Exception e)
+            catch
             {
                 //throw new JsonRpcApiException()
                 //{

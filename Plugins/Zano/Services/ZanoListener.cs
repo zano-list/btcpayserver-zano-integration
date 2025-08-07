@@ -37,6 +37,11 @@ namespace BTCPayServer.Plugins.Zano.Services
         private readonly InvoiceActivator _invoiceActivator;
         private readonly PaymentService _paymentService;
 
+        // Polling mechanism for block detection
+        private readonly Dictionary<string, long> _lastKnownBlockHeights = new();
+        private Timer _blockPollingTimer;
+        private const int BLOCK_POLLING_INTERVAL_SECONDS = 10; // Check every 10 seconds for testing
+
         public ZanoListener(InvoiceRepository invoiceRepository,
             EventAggregator eventAggregator,
             ZanoRPCProvider zanoRpcProvider,
@@ -63,6 +68,116 @@ namespace BTCPayServer.Plugins.Zano.Services
             base.SubscribeToEvents();
             Subscribe<ZanoEvent>();
             Subscribe<ZanoRPCProvider.ZanoDaemonStateChange>();
+        }
+
+        public override async Task StartAsync(CancellationToken cancellationToken)
+        {
+            await base.StartAsync(cancellationToken);
+
+            _logger.LogInformation($"Starting ZanoListener with block polling every {BLOCK_POLLING_INTERVAL_SECONDS} seconds");
+
+            // Start block polling timer
+            _blockPollingTimer = new Timer(async _ => await PollForNewBlocks(), null,
+                TimeSpan.FromSeconds(BLOCK_POLLING_INTERVAL_SECONDS),
+                TimeSpan.FromSeconds(BLOCK_POLLING_INTERVAL_SECONDS));
+
+            _logger.LogInformation("ZanoListener started with block polling enabled");
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            _blockPollingTimer?.Dispose();
+            await base.StopAsync(cancellationToken);
+        }
+
+        private async Task PollForNewBlocks()
+        {
+            try
+            {
+                _logger.LogDebug("Starting block polling cycle");
+
+                foreach (var cryptoCode in _zanoRpcProvider.DaemonRpcClients.Keys)
+                {
+                    _logger.LogDebug($"Checking {cryptoCode} daemon availability");
+
+                    var isAvailable = _zanoRpcProvider.IsAvailable(cryptoCode);
+                    _logger.LogDebug($"{cryptoCode} IsAvailable: {isAvailable}");
+
+                    if (_zanoRpcProvider.Summaries.TryGetValue(cryptoCode, out var summary))
+                    {
+                        _logger.LogDebug($"{cryptoCode} Summary - Synced: {summary.Synced}, WalletAvailable: {summary.WalletAvailable}, DaemonAvailable: {summary.DaemonAvailable}, CurrentHeight: {summary.CurrentHeight}");
+                    }
+                    else
+                    {
+                        _logger.LogDebug($"{cryptoCode} No summary available");
+                    }
+
+                    if (!isAvailable)
+                    {
+                        _logger.LogDebug($"{cryptoCode} daemon is not available, skipping");
+                        continue;
+                    }
+
+                    var currentHeight = await GetCurrentBlockHeight(cryptoCode);
+                    if (currentHeight.HasValue)
+                    {
+                        _logger.LogDebug($"Current block height for {cryptoCode}: {currentHeight.Value}");
+
+                        if (!_lastKnownBlockHeights.ContainsKey(cryptoCode))
+                        {
+                            _lastKnownBlockHeights[cryptoCode] = currentHeight.Value;
+                            _logger.LogInformation($"Initialized block height for {cryptoCode}: {currentHeight.Value}");
+                        }
+                        else if (currentHeight.Value > _lastKnownBlockHeights[cryptoCode])
+                        {
+                            _logger.LogInformation($"New block detected for {cryptoCode}: {_lastKnownBlockHeights[cryptoCode]} -> {currentHeight.Value}");
+                            _lastKnownBlockHeights[cryptoCode] = currentHeight.Value;
+                            await OnNewBlock(cryptoCode);
+                        }
+                        else if (currentHeight.Value == _lastKnownBlockHeights[cryptoCode])
+                        {
+                            _logger.LogDebug($"No new blocks for {cryptoCode}, height remains: {currentHeight.Value}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Block height decreased for {cryptoCode}: {_lastKnownBlockHeights[cryptoCode]} -> {currentHeight.Value}");
+                            _lastKnownBlockHeights[cryptoCode] = currentHeight.Value;
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Could not get block height for {cryptoCode}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during block polling");
+            }
+        }
+
+        private async Task<long?> GetCurrentBlockHeight(string cryptoCode)
+        {
+            try
+            {
+                if (!_zanoRpcProvider.DaemonRpcClients.TryGetValue(cryptoCode, out var daemonClient))
+                {
+                    _logger.LogWarning($"No daemon client found for {cryptoCode}");
+                    return null;
+                }
+
+                _logger.LogDebug($"Making RPC call to get block height for {cryptoCode}");
+                var result = await daemonClient.SendCommandAsync<JsonRpcClient.NoRequestModel, GetInfoResponse>(
+                    "getinfo", JsonRpcClient.NoRequestModel.Instance);
+
+                _logger.LogDebug($"RPC response for {cryptoCode}: Height={result.Height}, TargetHeight={result.TargetHeight}");
+                return result.Height;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Failed to get block height for {cryptoCode}");
+                return null;
+            }
         }
 
         protected override async Task ProcessEvent(object evt, CancellationToken cancellationToken)
@@ -147,76 +262,68 @@ namespace BTCPayServer.Plugins.Zano.Services
 
             var existingPaymentData = expandedInvoices.SelectMany(tuple => tuple.ExistingPayments);
 
-            var accountToAddressQuery = new Dictionary<long, List<long>>();
-            //create list of subaddresses to account to query the monero wallet
-            foreach (var expandedInvoice in expandedInvoices)
-            {
-                //var addressIndexList =
-                //    accountToAddressQuery.GetValueOrDefault(expandedInvoice.PaymentMethodDetails.AccountIndex, []);
 
-                //addressIndexList.AddRange(
-                //    expandedInvoice.ExistingPayments.Select(tuple => tuple.PaymentData.SubaddressIndex));
-                //addressIndexList.Add(expandedInvoice.PaymentMethodDetails.AddressIndex);
-                //accountToAddressQuery.AddOrReplace(expandedInvoice.PaymentMethodDetails.AccountIndex, addressIndexList);
-            }
 
-            var tasks = accountToAddressQuery.ToDictionary(datas => datas.Key,
-                datas => zanoWalletRpcClient.SendCommandAsync<GetTransfersRequest, GetTransfersResponse>(
-                    "get_transfers",
-                    new GetTransfersRequest()
-                    {
-                        Count = 100,
-                        ExcludeMiningTxs = false,
-                        ExcludeUnconfirmed = true,
-                        Offset = 0,
-                        Order = "FROM_END_TO_BEGIN",
-                        UpdateProvisionInfo = true
-                    }));
+            var keyValuePair = await zanoWalletRpcClient.SendCommandAsync<GetTransfersRequest, GetTransfersResponse>(
+                      "get_recent_txs_and_info2",
+                      new GetTransfersRequest()
+                      {
+                          Count = 100,
+                          ExcludeMiningTxs = false,
+                          ExcludeUnconfirmed = true,
+                          Offset = 0,
+                          Order = "FROM_END_TO_BEGIN",
+                          UpdateProvisionInfo = true
+                      });
 
-            await Task.WhenAll(tasks.Values);
+
 
 
             var transferProcessingTasks = new List<Task>();
 
             var updatedPaymentEntities = new List<(PaymentEntity Payment, InvoiceEntity invoice)>();
-            foreach (var keyValuePair in tasks)
-            {
-                var transfers = keyValuePair.Value.Result.transfers;
-                if (transfers == null)
-                {
-                    continue;
-                }
 
-                transferProcessingTasks.AddRange(transfers.Select(transfer =>
+            var transfers = keyValuePair.transfers;
+
+            if (transfers.Count > 0 && expandedInvoices.Count() > 0)
+            {
+                foreach (var transfer in transfers)
                 {
+
                     InvoiceEntity invoice = null;
                     var existingMatch = existingPaymentData.SingleOrDefault(tuple =>
-                        tuple.Payment.Destination == transfer.remote_addresses[0] &&
+                        tuple.Payment.Destination == transfer.payment_id &&
                         tuple.PaymentData.TransactionId == transfer.tx_hash);
 
                     if (existingMatch.Invoice != null)
                     {
                         invoice = existingMatch.Invoice;
                     }
-                    else
+                    else if (transfer.payment_id != null)
                     {
                         var newMatch = expandedInvoices.SingleOrDefault(tuple =>
-                            tuple.Prompt.Destination == transfer.remote_addresses[0]);
+                                    tuple.Invoice.Addresses.Any(x => x.Address == transfer.payment_id));
+
 
                         if (newMatch.Invoice == null)
                         {
-                            return Task.CompletedTask;
+                            continue;
                         }
 
                         invoice = newMatch.Invoice;
                     }
-                    var currentHeight = keyValuePair.Value.Result.pi.curent_height;
-                    var confirmations = currentHeight - transfer.height + 1;
+                    if (invoice != null)
+                    {
+                        var currentHeight = keyValuePair.pi.curent_height;
+                        var confirmations = currentHeight - transfer.height;
+                        if (confirmations > 3)
+                        {
 
-                    return HandlePaymentData(cryptoCode, transfer.subtransfers[0].amount, transfer.tx_hash, confirmations, currentHeight,
-                        transfer.unlock_time, invoice,
-                        updatedPaymentEntities);
-                }));
+                            transferProcessingTasks.Add(HandlePaymentData(cryptoCode, transfer.subtransfers[0].amount, transfer.tx_hash, confirmations, currentHeight,
+                               transfer.unlock_time, invoice, updatedPaymentEntities));
+                        }
+                    }
+                };
             }
 
             transferProcessingTasks.Add(
@@ -229,13 +336,16 @@ namespace BTCPayServer.Plugins.Zano.Services
                     _eventAggregator.Publish(new InvoiceNeedUpdateEvent(valueTuples.Key.Id));
                 }
             }
+
         }
 
         private async Task OnNewBlock(string cryptoCode)
         {
+            _logger.LogInformation($"Processing new block for {cryptoCode}");
             await UpdateAnyPendingZanoLikePayment(cryptoCode);
             _eventAggregator.Publish(new NewBlockEvent()
             { PaymentMethodId = PaymentTypes.CHAIN.GetPaymentMethodId(cryptoCode) });
+            _logger.LogInformation($"NewBlockEvent published for {cryptoCode}");
         }
 
         private async Task OnTransactionUpdated(string cryptoCode, string transactionHash)

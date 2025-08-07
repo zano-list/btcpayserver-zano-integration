@@ -43,13 +43,29 @@ namespace BTCPayServer.Plugins.Zano.Services
                 {
                     try
                     {
-                        await _ZanoRpcProvider.UpdateSummary(cryptoCode);
-                        if (_ZanoRpcProvider.IsAvailable(cryptoCode))
+                        Logs.PayServer.LogDebug($"Updating summary for {cryptoCode}");
+                        var summary = await _ZanoRpcProvider.UpdateSummary(cryptoCode);
+                        
+                        if (summary != null)
                         {
+                            Logs.PayServer.LogDebug($"{cryptoCode} Summary - Synced: {summary.Synced}, WalletAvailable: {summary.WalletAvailable}, DaemonAvailable: {summary.DaemonAvailable}, CurrentHeight: {summary.CurrentHeight}");
+                        }
+                        else
+                        {
+                            Logs.PayServer.LogWarning($"Failed to update summary for {cryptoCode}");
+                        }
+                        
+                        var isAvailable = _ZanoRpcProvider.IsAvailable(cryptoCode);
+                        Logs.PayServer.LogDebug($"{cryptoCode} IsAvailable: {isAvailable}");
+                        
+                        if (isAvailable)
+                        {
+                            Logs.PayServer.LogDebug($"{cryptoCode} is available, waiting 1 minute before next update");
                             await Task.Delay(TimeSpan.FromMinutes(1), cancellation);
                         }
                         else
                         {
+                            Logs.PayServer.LogDebug($"{cryptoCode} is not available, retrying in 10 seconds");
                             await Task.Delay(TimeSpan.FromSeconds(10), cancellation);
                         }
                     }

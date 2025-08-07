@@ -74,15 +74,19 @@ namespace BTCPayServer.Plugins.Zano.Services
 
         public async Task<ZanoLikeSummary> UpdateSummary(string cryptoCode)
         {
+            _logger.LogDebug($"UpdateSummary called for {cryptoCode}");
+            
             if (!DaemonRpcClients.TryGetValue(cryptoCode.ToUpperInvariant(), out var daemonRpcClient) ||
                 !WalletRpcClients.TryGetValue(cryptoCode.ToUpperInvariant(), out var walletRpcClient))
             {
+                _logger.LogWarning($"No RPC clients found for {cryptoCode}");
                 return null;
             }
 
             var summary = new ZanoLikeSummary();
             try
             {
+                _logger.LogDebug($"Getting daemon info for {cryptoCode}");
                 var daemonResult =
                     await daemonRpcClient.SendCommandAsync<JsonRpcClient.NoRequestModel, GetInfoResponse>("getinfo",
                         JsonRpcClient.NoRequestModel.Instance);
@@ -92,22 +96,20 @@ namespace BTCPayServer.Plugins.Zano.Services
                 summary.Synced = !daemonResult.BusySyncing;
                 summary.UpdatedAt = DateTime.UtcNow;
                 summary.DaemonAvailable = true;
+                _logger.LogDebug($"{cryptoCode} Daemon info - Height: {summary.CurrentHeight}, Synced: {summary.Synced}, BusySyncing: {daemonResult.BusySyncing}");
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, $"Failed to get daemon info for {cryptoCode}");
                 summary.DaemonAvailable = false;
             }
 
             bool walletCreated = false;
-        retry:
             try
             {
-
+                _logger.LogDebug($"Getting wallet height for {cryptoCode}");
 
                 var client = new HttpClient();
-
-
-
 
                 var path = _zanoLikeConfiguration.ZanoLikeConfigurationItems.ToImmutableDictionary(pair => pair.Key,
                         pair => pair.Value.DaemonRpcUri).FirstOrDefault().Value;
@@ -126,13 +128,7 @@ namespace BTCPayServer.Plugins.Zano.Services
 
                 var heightInfo = JsonSerializer.Deserialize<GetHeightResponse>(json, options);
 
-                //Console.WriteLine($"Height: {heightInfo.Height}, Status: {heightInfo.Status}");
-
-
-
-
-
-
+                _logger.LogDebug($"{cryptoCode} Wallet height: {heightInfo.Height}");
 
                 summary.WalletHeight = heightInfo.Height;
                 summary.WalletAvailable = true;
@@ -143,8 +139,9 @@ namespace BTCPayServer.Plugins.Zano.Services
                 //walletCreated = true;
                 //goto retry;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, $"Failed to get wallet height for {cryptoCode}");
                 summary.WalletAvailable = false;
             }
 
@@ -159,7 +156,12 @@ namespace BTCPayServer.Plugins.Zano.Services
             _summaries.AddOrReplace(cryptoCode, summary);
             if (changed)
             {
+                _logger.LogInformation($"State changed for {cryptoCode}, publishing ZanoDaemonStateChange event");
                 _eventAggregator.Publish(new ZanoDaemonStateChange() { Summary = summary, CryptoCode = cryptoCode });
+            }
+            else
+            {
+                _logger.LogDebug($"No state change for {cryptoCode}");
             }
 
             return summary;
