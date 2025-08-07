@@ -82,7 +82,7 @@ namespace BTCPayServer.Plugins.Zano.Payments
             context.Prompt.Destination = address.Address;
             context.Prompt.PaymentMethodFee = ZanoMoney.Convert(feeRatePerByte * 100);
             context.Prompt.Details = JObject.FromObject(details, Serializer);
-            context.TrackedDestinations.Add(address.Address);
+            context.TrackedDestinations.Add(address.paymentId);
         }
         private ZanoPaymentPromptDetails ParsePaymentMethodConfig(JToken config)
         {

@@ -20,7 +20,7 @@ namespace BTCPayServer.Plugins.Zano.RPC.Models
 
     public class Receive
     {
-        public int amount { get; set; }
+        public long amount { get; set; }
         public string asset_id { get; set; }
         public int index { get; set; }
     }
@@ -29,7 +29,7 @@ namespace BTCPayServer.Plugins.Zano.RPC.Models
     {
         public int last_item_index { get; set; }
         public Pi pi { get; set; }
-        public int total_transfers { get; set; }
+        public long total_transfers { get; set; }
         public List<Transfer> transfers { get; set; }
     }
 
@@ -46,7 +46,7 @@ namespace BTCPayServer.Plugins.Zano.RPC.Models
 
     public class Subtransfer
     {
-        public int amount { get; set; }
+        public long amount { get; set; }
         public string asset_id { get; set; }
         public bool is_income { get; set; }
     }

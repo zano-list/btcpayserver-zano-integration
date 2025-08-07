@@ -49,7 +49,7 @@ public class ZanoPlugin : BaseBTCPayServerPlugin
         "ZANO_USD = zano(ZANO_USD)",
         "ZANO_EUR = zano(ZANO_EUR)"
     },
-            CryptoImagePath = "zano.svg",
+            CryptoImagePath = "ZanoLikeDaemonCallback/zano.svg",
             UriScheme = "zano"
         };
 
