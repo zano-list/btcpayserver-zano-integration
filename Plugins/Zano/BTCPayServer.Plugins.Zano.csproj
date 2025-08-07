@@ -72,7 +72,6 @@
     <None Update="BTCPayServer.Plugins.Zano.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <EmbeddedResource Include="zano.svg" />
   </ItemGroup>
 
   <ItemGroup>

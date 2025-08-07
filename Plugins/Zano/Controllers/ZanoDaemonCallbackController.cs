@@ -1,5 +1,4 @@
 using BTCPayServer.Plugins.Zano.RPC;
-using System.Reflection;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,21 +32,6 @@ namespace BTCPayServer.Plugins.Zano.Controllers
                 CryptoCode = cryptoCode.ToUpperInvariant()
             });
             return Ok();
-        }
-
-        [HttpGet("zano.svg")]
-        public IActionResult GetZanoSvg()
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "BTCPayServer.Plugins.Zano.zano.svg";
-            
-            using var stream = assembly.GetManifestResourceStream(resourceName);
-            if (stream == null)
-            {
-                return NotFound();
-            }
-            
-            return File(stream, "image/svg+xml");
         }
     }
 }
