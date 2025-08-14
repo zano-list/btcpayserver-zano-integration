@@ -222,7 +222,9 @@
         "BTCPAY_DOCKERDEPLOYMENT": "true",
         "BTCPAY_RECOMMENDED-PLUGINS": "",
         "BTCPAY_CHEATMODE": "true",
-        "BTCPAY_EXPLORERPOSTGRES": "User ID=postgres;Include Error Detail=true;Host=127.0.0.1;Port=39372;Database=nbxplorer"
+        "BTCPAY_EXPLORERPOSTGRES": "User ID=postgres;Include Error Detail=true;Host=127.0.0.1;Port=39372;Database=nbxplorer",
+        "BTCPAY_ZANO_DAEMON_URI": "http://127.0.0.1:11211",
+        "BTCPAY_ZANO_WALLET_DAEMON_URI": "http://127.0.0.1:11233"
       },
       "applicationUrl": "https://localhost:14142/"
     }
