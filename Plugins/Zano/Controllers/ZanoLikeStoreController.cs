@@ -64,39 +64,35 @@ namespace BTCPayServer.Plugins.Zano.Controllers
         {
             var excludeFilters = storeData.GetStoreBlob().GetExcludedPaymentMethods();
 
-            var accountsList = _zanoLikeConfiguration.ZanoLikeConfigurationItems.ToDictionary(pair => pair.Key,
-                pair => GetAccounts(pair.Key));
 
-            await Task.WhenAll(accountsList.Values);
             return new ZanoLikePaymentMethodListViewModel()
             {
                 Items = _zanoLikeConfiguration.ZanoLikeConfigurationItems.Select(pair =>
-                    GetZanoLikePaymentMethodViewModel(storeData, pair.Key, excludeFilters,
-                        accountsList[pair.Key].Result))
+                    GetZanoLikePaymentMethodViewModel(storeData, pair.Key, excludeFilters))
             };
         }
 
-        private Task<GetAccountsResponse> GetAccounts(string cryptoCode)
-        {
-            try
-            {
-                if (_ZanoRpcProvider.Summaries.TryGetValue(cryptoCode, out var summary) && summary.WalletAvailable)
-                {
+        //private Task<GetAccountsResponse> GetAccounts(string cryptoCode)
+        //{
+        //    try
+        //    {
+        //        if (_ZanoRpcProvider.Summaries.TryGetValue(cryptoCode, out var summary) && summary.WalletAvailable)
+        //        {
 
-                    return _ZanoRpcProvider.WalletRpcClients[cryptoCode].SendCommandAsync<GetAccountsRequest, GetAccountsResponse>("getbalance", new GetAccountsRequest());
-                }
-            }
-            catch
-            {
-                // ignored
-            }
+        //            return _ZanoRpcProvider.WalletRpcClients[cryptoCode].SendCommandAsync<GetAccountsRequest, GetAccountsResponse>("getbalance", new GetAccountsRequest());
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        // ignored
+        //    }
 
-            return Task.FromResult<GetAccountsResponse>(null);
-        }
+        //    return Task.FromResult<GetAccountsResponse>(null);
+        //}
 
         private ZanoLikePaymentMethodViewModel GetZanoLikePaymentMethodViewModel(
             StoreData storeData, string cryptoCode,
-            IPaymentFilter excludeFilters, GetAccountsResponse accountsResponse)
+            IPaymentFilter excludeFilters)
         {
             var zano = storeData.GetPaymentMethodConfigs(_handlers)
                 .Where(s => s.Value is ZanoPaymentPromptDetails)
@@ -106,10 +102,6 @@ namespace BTCPayServer.Plugins.Zano.Controllers
             _ZanoRpcProvider.Summaries.TryGetValue(cryptoCode, out var summary);
             _zanoLikeConfiguration.ZanoLikeConfigurationItems.TryGetValue(cryptoCode,
                 out var configurationItem);
-            var accounts = accountsResponse?.SubaddressAccounts?.Select(account =>
-                new SelectListItem(
-                    $"{account.AccountIndex} - {(string.IsNullOrEmpty(account.Label) ? "No label" : account.Label)}",
-                    account.AccountIndex.ToString(CultureInfo.InvariantCulture)));
 
             var settlementThresholdChoice = ZanoLikeSettlementThresholdChoice.StoreSpeedPolicy;
             if (settings != null && settings.InvoiceSettledConfirmationThreshold is { } confirmations)
@@ -130,9 +122,7 @@ namespace BTCPayServer.Plugins.Zano.Controllers
                     !excludeFilters.Match(PaymentTypes.CHAIN.GetPaymentMethodId(cryptoCode)),
                 Summary = summary,
                 CryptoCode = cryptoCode,
-                //AccountIndex = settings?.AccountIndex ?? accountsResponse?.SubaddressAccounts?.FirstOrDefault()?.AccountIndex ?? 0,
-                //Accounts = accounts == null ? null : new SelectList(accounts, nameof(SelectListItem.Value),
-                //    nameof(SelectListItem.Text)),
+
                 SettlementConfirmationThresholdChoice = settlementThresholdChoice,
                 CustomSettlementConfirmationThreshold =
                     settings != null &&
@@ -152,7 +142,7 @@ namespace BTCPayServer.Plugins.Zano.Controllers
             }
 
             var vm = GetZanoLikePaymentMethodViewModel(StoreData, cryptoCode,
-                StoreData.GetStoreBlob().GetExcludedPaymentMethods(), await GetAccounts(cryptoCode));
+                StoreData.GetStoreBlob().GetExcludedPaymentMethods());
             return View("/Views/Zano/GetStoreZanoLikePaymentMethod.cshtml", vm);
         }
 
@@ -290,11 +280,9 @@ namespace BTCPayServer.Plugins.Zano.Controllers
             {
 
                 var vm = GetZanoLikePaymentMethodViewModel(StoreData, cryptoCode,
-                    StoreData.GetStoreBlob().GetExcludedPaymentMethods(), await GetAccounts(cryptoCode));
+                    StoreData.GetStoreBlob().GetExcludedPaymentMethods());
 
                 vm.Enabled = viewModel.Enabled;
-                //vm.NewAccountLabel = viewModel.NewAccountLabel;
-                //vm.AccountIndex = viewModel.AccountIndex;
                 vm.SettlementConfirmationThresholdChoice = viewModel.SettlementConfirmationThresholdChoice;
                 vm.CustomSettlementConfirmationThreshold = viewModel.CustomSettlementConfirmationThreshold;
                 vm.SupportWalletExport = configurationItem.WalletDirectory is not null;
