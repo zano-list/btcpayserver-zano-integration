@@ -1,0 +1,119 @@
+services:
+  postgres:
+    image: postgres:17.4
+    container_name: postgres
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: btcpayserver
+    ports:
+      - "39372:5432"
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+
+  bitcoind:
+    restart: unless-stopped
+    image: btcpayserver/bitcoin:29.0
+    container_name: bitcoind
+    environment:
+      BITCOIN_NETWORK: regtest
+      BITCOIN_WALLETDIR: "/data/wallets"
+      BITCOIN_EXTRA_ARGS: |-
+        rpcuser=ceiwHEbqWI83
+        rpcpassword=DwubwWsoo3
+        rpcport=43782
+        rpcbind=0.0.0.0:43782
+        rpcallowip=0.0.0.0/0
+        port=39388
+        whitelist=0.0.0.0/0
+        zmqpubrawblock=tcp://0.0.0.0:28332
+        zmqpubrawtx=tcp://0.0.0.0:28333
+        deprecatedrpc=signrawtransaction
+        fallbackfee=0.0002
+    ports:
+      - "43782:43782"
+      - "39388:39388"
+    expose:
+      - "43782" # RPC
+      - "39388" # P2P
+      - "28332" # ZMQ
+      - "28333" # ZMQ
+    volumes:
+      - bitcoin_data:/data
+
+  nbxplorer:
+    image: nicolasdorier/nbxplorer:2.5.25
+    container_name: nbxplorer
+    restart: unless-stopped
+    ports:
+      - "32838:32838"
+    expose:
+      - "32838"
+    environment:
+      NBXPLORER_NETWORK: regtest
+      NBXPLORER_CHAINS: "btc"
+      NBXPLORER_BTCRPCURL: http://bitcoind:43782/
+      NBXPLORER_BTCNODEENDPOINT: bitcoind:39388
+      NBXPLORER_BTCRPCUSER: ceiwHEbqWI83
+      NBXPLORER_BTCRPCPASSWORD: DwubwWsoo3
+      NBXPLORER_BIND: 0.0.0.0:32838
+      NBXPLORER_MINGAPSIZE: 5
+      NBXPLORER_MAXGAPSIZE: 10
+      NBXPLORER_VERBOSE: 1
+      NBXPLORER_POSTGRES: User ID=postgres;Include Error Detail=true;Host=postgres;Port=5432;Database=nbxplorer;Password=postgres
+      NBXPLORER_EXPOSERPC: 1
+      NBXPLORER_NOAUTH: 1
+    depends_on:
+      - bitcoind
+      - postgres
+
+  zano-daemon:
+    image: canardleteer/zano:master-zano-runner
+    container_name: zano-daemon
+    restart: unless-stopped
+    command:
+      - --data-dir=/data
+      - --p2p-bind-port=11898
+      - --rpc-bind-port=11211
+      - --rpc-bind-ip=0.0.0.0
+      - --log-level=1
+      - --offline-mode
+      - --no-predownload
+    ports:
+      - "11898:11898"   # p2p
+      - "11211:11211"   # rpc
+    volumes:
+      - zano_daemon_data:/data
+
+  zano-wallet-rpc:
+    image: canardleteer/zano:master-zano-runner
+    container_name: zano-wallet-rpc
+    restart: unless-stopped
+    command:
+      - --data-dir=/wallet
+      - --rpc-bind-port=11233
+      - --rpc-bind-ip=0.0.0.0
+      - --daemon-address=zano-daemon:11211
+      - --log-level=1
+    ports:
+      - "11233:11233"   # Wallet RPC
+    depends_on:
+      - zano-daemon
+    volumes:
+      - zano_wallet_data:/wallet
+
+
+
+volumes:
+  bitcoin_data:
+  postgres_data:
+  zano_daemon_data:
+  zano_wallet_data:
+
+networks:
+  default:
+    driver: bridge
