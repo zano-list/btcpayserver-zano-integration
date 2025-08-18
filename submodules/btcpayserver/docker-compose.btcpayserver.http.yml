@@ -82,7 +82,7 @@ services:
       - ZANO_RPC_PORT=17787
       - ZANO_P2P_PORT=11898
     volumes:
-      - zano_data:/data
+      - "D:\\Crypto\\CryptoData:/home/ubuntu/.Zano"
     networks:
       - btcpayserver_network
 
@@ -98,11 +98,13 @@ services:
       - ZANO_WALLET_RPC_PORT=11211
       - ZANO_WALLET_DAEMON_PORT=11233
     volumes:
-      - zano_wallet_data:/data
+      - "D:\\Crypto\\ZanoWallets:/home/ubuntu/.Zano"
     depends_on:
       - zano-daemon
     networks:
       - btcpayserver_network
+
+
 
   btcpayserver:
     build:
