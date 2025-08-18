@@ -9,36 +9,20 @@ param(
 Write-Host "=== Zano Wallet Directory Creator ===" -ForegroundColor Green
 Write-Host ""
 
-# Check if wallet already exists
-$WalletPath = "D:\Crypto\ZanoWallets\private\fresh-wallet"
-if (Test-Path $WalletPath) {
-    Write-Host "Wallet already exists at: $WalletPath" -ForegroundColor Yellow
-    Write-Host "Skipping directory creation." -ForegroundColor Yellow
-    exit 0
-}
-
-# Create wallet directory
-$WalletDir = "D:\Crypto\ZanoWallets\private"
-if (!(Test-Path $WalletDir)) {
-    Write-Host "Creating wallet directory: $WalletDir" -ForegroundColor Blue
-    New-Item -ItemType Directory -Path $WalletDir -Force | Out-Null
-    Write-Host "Wallet directory created successfully!" -ForegroundColor Green
-} else {
-    Write-Host "Wallet directory already exists: $WalletDir" -ForegroundColor Yellow
-}
+# Note: Wallet directories are now managed by Docker containers
+Write-Host "Note: Wallet directories are now managed by Docker containers" -ForegroundColor Yellow
+Write-Host "No local directory creation needed." -ForegroundColor Yellow
 
 Write-Host ""
-Write-Host "=== Wallet Directory Ready! ===" -ForegroundColor Green
-Write-Host "Wallet directory: $WalletDir" -ForegroundColor Cyan
+Write-Host "=== Docker Container Setup Complete! ===" -ForegroundColor Green
 Write-Host "Password: $WalletPassword" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "IMPORTANT: Save this password securely!" -ForegroundColor Red
 Write-Host "You will need it to access your wallet." -ForegroundColor Red
 Write-Host ""
 Write-Host "Next Steps:" -ForegroundColor Blue
-Write-Host "1. Download Zano wallet tools from: https://github.com/zano-project/zano/releases" -ForegroundColor White
-Write-Host "2. Use the wallet tools to create your wallet file" -ForegroundColor White
-Write-Host "3. Place the wallet file in: $WalletDir" -ForegroundColor White
-Write-Host "4. BTCPayServer will automatically detect the wallet" -ForegroundColor White
+Write-Host "1. The Zano daemon and wallet RPC are running in Docker containers" -ForegroundColor White
+Write-Host "2. Wallet data is stored in Docker volumes (zano_data and zano_wallet_data)" -ForegroundColor White
+Write-Host "3. BTCPayServer will automatically detect the Zano services" -ForegroundColor White
 Write-Host ""
-Write-Host "The wallet directory is now ready for your wallet file!" -ForegroundColor Green
+Write-Host "Your Zano setup is now containerized and ready!" -ForegroundColor Green

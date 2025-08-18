@@ -4,9 +4,9 @@ This directory contains scripts to create Zano wallets for use with BTCPayServer
 
 ## Prerequisites
 
-1. **Docker must be running** - The scripts use Docker containers to create wallets
-2. **BTCPayServer services must be running** - Zano daemon should be accessible
-3. **Directory structure** - `D:\Crypto\ZanoWallets` will be created automatically
+1. **Docker must be running** - The Zano services run in Docker containers
+2. **BTCPayServer services must be running** - Zano daemon and wallet RPC should be accessible
+3. **Docker volumes** - `zano_data` and `zano_wallet_data` volumes are managed automatically
 
 ## Available Scripts
 
@@ -56,22 +56,22 @@ create-zano-wallet.bat
 ## How It Works
 
 1. **Script Execution**: The script prompts for a wallet password
-2. **Directory Creation**: Creates `D:\Crypto\ZanoWallets\private\` if it doesn't exist
-3. **Directory Structure**: Prepares the folder structure for wallet files
-4. **Instructions**: Provides clear next steps for wallet creation
-5. **Integration**: BTCPayServer will detect the wallet directory automatically
+2. **Container Setup**: Zano services run in Docker containers with managed volumes
+3. **Data Storage**: Blockchain and wallet data stored in Docker volumes
+4. **Automatic Integration**: BTCPayServer automatically detects Zano services
+5. **No Host Dependencies**: All data stays within the Docker environment
 
-**Note**: The current scripts create the directory structure only. You'll need to:
-- Download Zano wallet tools from the official releases
-- Create the wallet file manually using those tools
-- Place the wallet file in the created directory
+**Note**: The current setup uses Docker containers and volumes:
+- Zano daemon data stored in `zano_data` volume
+- Wallet data stored in `zano_wallet_data` volume
+- No local host directory dependencies
 
 ## Wallet File Details
 
-- **Location**: `D:\Crypto\ZanoWallets\private\fresh-wallet`
+- **Location**: Stored in Docker volume `zano_wallet_data`
 - **Format**: Zano wallet file (encrypted with your password)
 - **Access**: Requires the password you set during creation
-- **Backup**: Copy this file to a secure location
+- **Backup**: Docker volumes can be backed up using Docker commands
 
 ## Security Notes
 
