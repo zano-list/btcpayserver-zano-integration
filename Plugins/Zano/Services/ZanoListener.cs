@@ -40,7 +40,7 @@ namespace BTCPayServer.Plugins.Zano.Services
         // Polling mechanism for block detection
         private readonly Dictionary<string, long> _lastKnownBlockHeights = new();
         private Timer _blockPollingTimer;
-        private const int BLOCK_POLLING_INTERVAL_SECONDS = 10; // Check every 10 seconds for testing
+        private const int BLOCK_POLLING_INTERVAL_SECONDS = 3; // Check every 5 seconds for testing
 
         public ZanoListener(InvoiceRepository invoiceRepository,
             EventAggregator eventAggregator,
@@ -316,7 +316,7 @@ namespace BTCPayServer.Plugins.Zano.Services
                     {
                         var currentHeight = keyValuePair.pi.curent_height;
                         var confirmations = currentHeight - transfer.height;
-                        if (confirmations > 3)
+                        if (confirmations > 2)
                         {
 
                             transferProcessingTasks.Add(HandlePaymentData(cryptoCode, transfer.subtransfers[0].amount, transfer.tx_hash, confirmations, currentHeight,
