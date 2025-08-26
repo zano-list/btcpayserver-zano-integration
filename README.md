@@ -109,6 +109,19 @@ Configure the plugin through BTCPay Server's plugin settings:
 }
 ```
 
+### Environment Variables
+You can also configure the plugin using environment variables:
+
+```bash
+# Zano Daemon RPC endpoint
+export ZANO_DAEMON_URI="http://37.27.100.59:10500"
+
+# Zano Wallet RPC endpoint  
+export ZANO_WALLET_DAEMON_URI="http://127.0.0.1:11233"
+```
+
+**Note**: Environment variables take precedence over configuration file settings.
+
 ### Zano Node Configuration
 Ensure your Zano node has RPC enabled:
 
