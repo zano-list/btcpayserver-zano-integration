@@ -1,108 +1,143 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace BTCPayServer.Plugins.Zano.RPC.Models
 {
-
-
     public class EmployedEntries
     {
-        public List<Receive> receive { get; set; }
+        [JsonProperty("receive")]
+        public List<Receive> Receive { get; set; }
     }
 
     public class Pi
     {
-        public long balance { get; set; }
-        public int curent_height { get; set; }
-        public int transfer_entries_count { get; set; }
-        public int transfers_count { get; set; }
-        public long unlocked_balance { get; set; }
+        [JsonProperty("balance")]
+        public long Balance { get; set; }
+        
+        [JsonProperty("curent_height")]
+        public int CurrentHeight { get; set; }
+        
+        [JsonProperty("transfer_entries_count")]
+        public int TransferEntriesCount { get; set; }
+        
+        [JsonProperty("transfers_count")]
+        public int TransfersCount { get; set; }
+        
+        [JsonProperty("unlocked_balance")]
+        public long UnlockedBalance { get; set; }
     }
 
     public class Receive
     {
-        public long amount { get; set; }
-        public string asset_id { get; set; }
-        public int index { get; set; }
+        [JsonProperty("amount")]
+        public long Amount { get; set; }
+        
+        [JsonProperty("asset_id")]
+        public string AssetId { get; set; }
+        
+        [JsonProperty("index")]
+        public int Index { get; set; }
     }
 
     public class GetTransfersResponse
     {
-        public int last_item_index { get; set; }
-        public Pi pi { get; set; }
-        public long total_transfers { get; set; }
-        public List<Transfer> transfers { get; set; }
+        [JsonProperty("last_item_index")]
+        public int LastItemIndex { get; set; }
+        
+        [JsonProperty("pi")]
+        public Pi Pi { get; set; }
+        
+        [JsonProperty("total_transfers")]
+        public long TotalTransfers { get; set; }
+        
+        [JsonProperty("transfers")]
+        public List<Transfer> Transfers { get; set; }
     }
-
-   
 
     public class ServiceEntry
     {
-        public string body { get; set; }
-        public int flags { get; set; }
-        public string instruction { get; set; }
-        public string security { get; set; }
-        public string service_id { get; set; }
+        [JsonProperty("body")]
+        public string Body { get; set; }
+        
+        [JsonProperty("flags")]
+        public int Flags { get; set; }
+        
+        [JsonProperty("instruction")]
+        public string Instruction { get; set; }
+        
+        [JsonProperty("security")]
+        public string Security { get; set; }
+        
+        [JsonProperty("service_id")]
+        public string ServiceId { get; set; }
     }
 
     public class Subtransfer
     {
-        public long amount { get; set; }
-        public string asset_id { get; set; }
-        public bool is_income { get; set; }
+        [JsonProperty("amount")]
+        public long Amount { get; set; }
+        
+        [JsonProperty("asset_id")]
+        public string AssetId { get; set; }
+        
+        [JsonProperty("is_income")]
+        public bool IsIncome { get; set; }
     }
 
     public class Transfer
     {
-        public string comment { get; set; }
-        public EmployedEntries employed_entries { get; set; }
-        public object fee { get; set; }
-        public int height { get; set; }
-        public bool is_mining { get; set; }
-        public bool is_mixing { get; set; }
-        public bool is_service { get; set; }
-        public string payment_id { get; set; }
-        public List<string> remote_addresses { get; set; }
-        public bool show_sender { get; set; }
-        public List<Subtransfer> subtransfers { get; set; }
-        public int timestamp { get; set; }
-        public int transfer_internal_index { get; set; }
-        public int tx_blob_size { get; set; }
-        public string tx_hash { get; set; }
-        public int tx_type { get; set; }
-        public int unlock_time { get; set; }
-        public List<ServiceEntry> service_entries { get; set; }
+        [JsonProperty("comment")]
+        public string Comment { get; set; }
+        
+        [JsonProperty("employed_entries")]
+        public EmployedEntries EmployedEntries { get; set; }
+        
+        [JsonProperty("fee")]
+        public object Fee { get; set; }
+        
+        [JsonProperty("height")]
+        public int Height { get; set; }
+        
+        [JsonProperty("is_mining")]
+        public bool IsMining { get; set; }
+        
+        [JsonProperty("is_mixing")]
+        public bool IsMixing { get; set; }
+        
+        [JsonProperty("is_service")]
+        public bool IsService { get; set; }
+        
+        [JsonProperty("payment_id")]
+        public string PaymentId { get; set; }
+        
+        [JsonProperty("remote_addresses")]
+        public List<string> RemoteAddresses { get; set; }
+        
+        [JsonProperty("show_sender")]
+        public bool ShowSender { get; set; }
+        
+        [JsonProperty("subtransfers")]
+        public List<Subtransfer> Subtransfers { get; set; }
+        
+        [JsonProperty("timestamp")]
+        public int Timestamp { get; set; }
+        
+        [JsonProperty("transfer_internal_index")]
+        public int TransferInternalIndex { get; set; }
+        
+        [JsonProperty("tx_blob_size")]
+        public int TxBlobSize { get; set; }
+        
+        [JsonProperty("tx_hash")]
+        public string TxHash { get; set; }
+        
+        [JsonProperty("tx_type")]
+        public int TxType { get; set; }
+        
+        [JsonProperty("unlock_time")]
+        public int UnlockTime { get; set; }
+        
+        [JsonProperty("service_entries")]
+        public List<ServiceEntry> ServiceEntries { get; set; }
     }
-
-
-
-
-    //public partial class GetTransfersResponse
-    //{
-    //    [JsonProperty("in")] public List<GetTransfersResponseItem> In { get; set; }
-    //    [JsonProperty("out")] public List<GetTransfersResponseItem> Out { get; set; }
-    //    [JsonProperty("pending")] public List<GetTransfersResponseItem> Pending { get; set; }
-    //    [JsonProperty("failed")] public List<GetTransfersResponseItem> Failed { get; set; }
-    //    [JsonProperty("pool")] public List<GetTransfersResponseItem> Pool { get; set; }
-
-    //    public partial class GetTransfersResponseItem
-
-    //    {
-    //        [JsonProperty("address")] public string Address { get; set; }
-    //        [JsonProperty("amount")] public long Amount { get; set; }
-    //        [JsonProperty("confirmations")] public long Confirmations { get; set; }
-    //        [JsonProperty("double_spend_seen")] public bool DoubleSpendSeen { get; set; }
-    //        [JsonProperty("height")] public long Height { get; set; }
-    //        [JsonProperty("note")] public string Note { get; set; }
-    //        [JsonProperty("payment_id")] public string PaymentId { get; set; }
-    //        [JsonProperty("subaddr_index")] public SubaddrIndex SubaddrIndex { get; set; }
-
-    //        [JsonProperty("suggested_confirmations_threshold")]
-    //        public long SuggestedConfirmationsThreshold { get; set; }
-
-    //        [JsonProperty("timestamp")] public long Timestamp { get; set; }
-    //        [JsonProperty("txid")] public string Txid { get; set; }
-    //        [JsonProperty("type")] public string Type { get; set; }
-    //        [JsonProperty("unlock_time")] public long UnlockTime { get; set; }
-    //    }
-    //}
 }

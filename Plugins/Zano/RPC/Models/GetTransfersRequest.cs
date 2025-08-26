@@ -1,5 +1,3 @@
-
-
 using Newtonsoft.Json;
 
 namespace BTCPayServer.Plugins.Zano.RPC.Models

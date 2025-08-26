@@ -72,7 +72,7 @@ namespace BTCPayServer.Plugins.Zano.Payments
             var feeRatePerKb = await zanoPrepare.GetFeeRate;
             var address = await zanoPrepare.ReserveAddress(invoice.Id);
 
-            var feeRatePerByte = feeRatePerKb.DefautlFee / 1024;
+            var feeRatePerByte = feeRatePerKb.DefaultFee / 1024;
             var details = new ZanoLikeOnChainPaymentMethodDetails()
             {
                 AccountAddres = zanoPrepare.AccountAddress,
@@ -82,7 +82,7 @@ namespace BTCPayServer.Plugins.Zano.Payments
             context.Prompt.Destination = address.Address;
             context.Prompt.PaymentMethodFee = ZanoMoney.Convert(feeRatePerByte * 100);
             context.Prompt.Details = JObject.FromObject(details, Serializer);
-            context.TrackedDestinations.Add(address.paymentId);
+            context.TrackedDestinations.Add(address.PaymentId);
         }
         private ZanoPaymentPromptDetails ParsePaymentMethodConfig(JToken config)
         {

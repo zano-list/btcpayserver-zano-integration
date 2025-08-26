@@ -1,10 +1,13 @@
 using System;
 using System.Globalization;
-
 using Newtonsoft.Json;
 
 namespace BTCPayServer.Plugins.Zano.RPC.Models
 {
+    /// <summary>
+    /// Custom JSON converter that handles parsing string values to long integers.
+    /// Used for cases where the API returns numeric values as strings.
+    /// </summary>
     public class ParseStringConverter : JsonConverter
     {
         public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
@@ -15,8 +18,9 @@ namespace BTCPayServer.Plugins.Zano.RPC.Models
             {
                 return null;
             }
+            
             var value = serializer.Deserialize<string>(reader);
-            if (Int64.TryParse(value, out long l))
+            if (long.TryParse(value, out long l))
             {
                 return l;
             }
@@ -34,7 +38,6 @@ namespace BTCPayServer.Plugins.Zano.RPC.Models
 
             var value = (long)untypedValue;
             serializer.Serialize(writer, value.ToString(CultureInfo.InvariantCulture));
-            return;
         }
 
         public static readonly ParseStringConverter Singleton = new();

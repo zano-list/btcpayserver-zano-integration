@@ -1,12 +1,16 @@
 ﻿using Newtonsoft.Json;
 
-namespace BTCPayServer.Plugins.Zano.RPC.Models;
-
-public class TransferRequest
+namespace BTCPayServer.Plugins.Zano.RPC.Models
 {
-    [JsonProperty("destinations")] public TransferDestination[] Destinations { get; set; }
-}
-public class TransferResponse
-{
-    [JsonProperty("tx_hash")] public string TransactionHash { get; set; }
+    public class TransferRequest
+    {
+        [JsonProperty("destinations")]
+        public TransferDestination[] Destinations { get; set; }
+    }
+    
+    public class TransferResponse
+    {
+        [JsonProperty("tx_hash")]
+        public string TransactionHash { get; set; }
+    }
 }
