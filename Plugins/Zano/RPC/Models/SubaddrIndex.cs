@@ -4,7 +4,10 @@ namespace BTCPayServer.Plugins.Zano.RPC.Models
 {
     public partial class SubaddrIndex
     {
-        [JsonProperty("major")] public long Major { get; set; }
-        [JsonProperty("minor")] public long Minor { get; set; }
+        [JsonProperty("major")]
+        public long Major { get; set; }
+        
+        [JsonProperty("minor")]
+        public long Minor { get; set; }
     }
 }

@@ -283,7 +283,7 @@ namespace BTCPayServer.Plugins.Zano.Services
 
             var updatedPaymentEntities = new List<(PaymentEntity Payment, InvoiceEntity invoice)>();
 
-            var transfers = keyValuePair.transfers;
+            var transfers = keyValuePair.Transfers;
 
             if (transfers.Count > 0 && expandedInvoices.Count() > 0)
             {
@@ -292,17 +292,17 @@ namespace BTCPayServer.Plugins.Zano.Services
 
                     InvoiceEntity invoice = null;
                     var existingMatch = existingPaymentData.SingleOrDefault(tuple =>
-                        tuple.Payment.Destination == transfer.payment_id &&
-                        tuple.PaymentData.TransactionId == transfer.tx_hash);
+                        tuple.Payment.Destination == transfer.PaymentId &&
+                        tuple.PaymentData.TransactionId == transfer.TxHash);
 
                     if (existingMatch.Invoice != null)
                     {
                         invoice = existingMatch.Invoice;
                     }
-                    else if (transfer.payment_id != null)
+                    else if (transfer.PaymentId != null)
                     {
                         var newMatch = expandedInvoices.SingleOrDefault(tuple =>
-                                    tuple.Invoice.Addresses.Any(x => x.Address == transfer.payment_id));
+                                    tuple.Invoice.Addresses.Any(x => x.Address == transfer.PaymentId));
 
 
                         if (newMatch.Invoice == null)
@@ -314,13 +314,13 @@ namespace BTCPayServer.Plugins.Zano.Services
                     }
                     if (invoice != null)
                     {
-                        var currentHeight = keyValuePair.pi.curent_height;
-                        var confirmations = currentHeight - transfer.height;
+                        var currentHeight = keyValuePair.Pi.CurrentHeight;
+                        var confirmations = currentHeight - transfer.Height;
                         if (confirmations > 2)
                         {
 
-                            transferProcessingTasks.Add(HandlePaymentData(cryptoCode, transfer.subtransfers[0].amount, transfer.tx_hash, confirmations, currentHeight,
-                               transfer.unlock_time, invoice, updatedPaymentEntities));
+                            transferProcessingTasks.Add(HandlePaymentData(cryptoCode, transfer.Subtransfers[0].Amount, transfer.TxHash, confirmations, currentHeight,
+                               transfer.UnlockTime, invoice, updatedPaymentEntities));
                         }
                     }
                 };
