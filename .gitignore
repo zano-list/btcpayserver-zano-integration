@@ -1,0 +1,8 @@
+.vs/
+Plugins/Zano/bin/
+Plugins/Zano/obj/
+zano-docker-images/
+postgres-data/
+zano-data/
+bitcoin-data/
+private/

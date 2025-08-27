@@ -1,0 +1,152 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:17.4
+    container_name: btcpayserver-postgres-http
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: btcpayserver
+    ports:
+      - "39372:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - btcpayserver_network
+
+  bitcoind:
+    image: btcpayserver/bitcoin:29.0
+    container_name: btcpayserver-bitcoind-http
+    restart: unless-stopped
+    environment:
+      BITCOIN_NETWORK: regtest
+      BITCOIN_WALLETDIR: "/data/wallets"
+      BITCOIN_EXTRA_ARGS: |-
+        rpcuser=btcpayserver
+        rpcpassword=btcpayserver
+        rpcport=43782
+        rpcbind=0.0.0.0:43782
+        rpcallowip=0.0.0.0/0
+        port=39388
+        whitelist=0.0.0.0/0
+        zmqpubrawblock=tcp://0.0.0.0:28332
+        zmqpubrawtx=tcp://0.0.0.0:28333
+        deprecatedrpc=signrawtransaction
+        fallbackfee=0.0002
+    ports:
+      - "43782:43782"  # RPC
+      - "39388:39388"  # P2P
+      - "28332:28332"  # ZMQ
+      - "28333:28333"  # ZMQ
+    volumes:
+      - bitcoin_data:/data
+    networks:
+      - btcpayserver_network
+
+  nbxplorer:
+    image: nicolasdorier/nbxplorer:2.5.26
+    container_name: btcpayserver-nbxplorer-http
+    restart: unless-stopped
+    ports:
+      - "32838:32838"
+    environment:
+      NBXPLORER_NETWORK: regtest
+      NBXPLORER_CHAINS: "btc"
+      NBXPLORER_BTCRPCURL: http://bitcoind:43782/
+      NBXPLORER_BTCNODEENDPOINT: bitcoind:39388
+      NBXPLORER_BTCRPCUSER: btcpayserver
+      NBXPLORER_BTCRPCPASSWORD: btcpayserver
+      NBXPLORER_BIND: 0.0.0.0:32838
+      NBXPLORER_MINGAPSIZE: 5
+      NBXPLORER_MAXGAPSIZE: 10
+      NBXPLORER_VERBOSE: 1
+      NBXPLORER_POSTGRES: User ID=postgres;Include Error Detail=true;Host=postgres;Port=5432;Database=nbxplorer
+      NBXPLORER_EXPOSERPC: 1
+      NBXPLORER_NOAUTH: 1
+    depends_on:
+      - bitcoind
+      - postgres
+    networks:
+      - btcpayserver_network
+
+  zano-daemon:
+    image: canardleteer/zano:master-zano-runner
+    container_name: btcpayserver-zano-daemon
+    restart: unless-stopped
+    ports:
+      - "17787:17787"
+      - "11898:11898"
+    environment:
+      - ZANO_NETWORK=mainnet
+      - ZANO_RPC_PORT=17787
+      - ZANO_P2P_PORT=11898
+    volumes:
+      - zano_data:/home/ubuntu/.Zano
+    networks:
+      - btcpayserver_network
+
+  zano-wallet-rpc:
+    image: canardleteer/zano:master-zano-runner
+    container_name: btcpayserver-zano-wallet-rpc
+    restart: unless-stopped
+    ports:
+      - "11211:11211"
+      - "11233:11233"
+    environment:
+      - ZANO_NETWORK=mainnet
+      - ZANO_WALLET_RPC_PORT=11211
+      - ZANO_WALLET_DAEMON_PORT=11233
+    volumes:
+      - zano_wallet_data:/home/ubuntu/.Zano
+    depends_on:
+      - zano-daemon
+    networks:
+      - btcpayserver_network
+
+
+
+  btcpayserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: btcpayserver-app-http
+    restart: unless-stopped
+    ports:
+      - "14142:80"  # Map host port 14142 to container port 80
+    environment:
+      - BTCPAY_PORT=80
+      - BTCPAY_NETWORK=regtest
+      - BTCPAY_CHAINS=btc,zano
+      - BTCPAY_DOCKERDEPLOYMENT=true
+      - BTCPAY_ALLOW-ADMIN-REGISTRATION=true
+      - BTCPAY_DISABLE-REGISTRATION=false
+      - ASPNETCORE_ENVIRONMENT=Development
+      - BTCPAY_VERBOSE=true
+      - BTCPAY_HttpsUseDefaultCertificate=false
+      - BTCPAY_POSTGRES=User ID=postgres;Include Error Detail=true;Host=postgres;Port=5432;Database=btcpayserver
+      - BTCPAY_BTCEXPLORERURL=http://nbxplorer:32838/
+      - BTCPAY_EXPLORERPOSTGRES=User ID=postgres;Include Error Detail=true;Host=postgres;Port=5432;Database=nbxplorer
+      - BTCPAY_BIND=0.0.0.0
+      - BTCPAY_ZANO_DAEMON_URI=http://zano-daemon:17787
+      - BTCPAY_ZANO_WALLET_DAEMON_URI=http://zano-wallet-rpc:17787
+    volumes:
+      - btcpayserver_data:/datadir
+    depends_on:
+      - postgres
+      - nbxplorer
+      - zano-daemon
+      - zano-wallet-rpc
+    networks:
+      - btcpayserver_network
+
+volumes:
+  postgres_data:
+  bitcoin_data:
+  btcpayserver_data:
+  zano_data:
+  zano_wallet_data:
+
+networks:
+  btcpayserver_network:
+    driver: bridge
