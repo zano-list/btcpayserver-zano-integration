@@ -39,7 +39,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using NBXplorer;
 using NicolasDorier.RateLimits;
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+
 
 
 namespace BTCPayServer.Hosting
@@ -177,7 +177,7 @@ namespace BTCPayServer.Hosting
             .AddControllersAsServices();
 
 
-            mvcBuilder.AddRazorRuntimeCompilation();
+
 
 
 
