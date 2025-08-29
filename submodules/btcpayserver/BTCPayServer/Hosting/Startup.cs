@@ -39,6 +39,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using NBXplorer;
 using NicolasDorier.RateLimits;
+#if !RAZOR_COMPILE_ON_BUILD
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+#endif
 
 namespace BTCPayServer.Hosting
 {
