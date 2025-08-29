@@ -68,35 +68,35 @@ Process Zano-specific payment data:
 ## 🛠️ Installation
 
 ### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/ZanoGitHub.git
-cd ZanoGitHub
-```
+\`\`\`bash
+git clone https://github.com/zano-list/btcpayserver-zano-integration.git
+cd btcpayserver-zano-integration
+\`\`\`
 
 ### 2. Build the Plugin
-```bash
+\`\`\`bash
 cd Plugins/Zano
 dotnet build
-```
+\`\`\`
 
 ### 3. Deploy to BTCPay Server
-```bash
+\`\`\`bash
 # Copy the built plugin to BTCPay Server plugins directory
 cp -r bin/Debug/net6.0/* /path/to/btcpayserver/plugins/Zano/
-```
+\`\`\`
 
 ### 4. Restart BTCPay Server
-```bash
+\`\`\`bash
 # Restart BTCPay Server to load the plugin
 sudo systemctl restart btcpayserver
-```
+\`\`\`
 
 ## ⚙️ Configuration
 
 ### Plugin Settings
 Configure the plugin through BTCPay Server's plugin settings:
 
-```json
+\`\`\`json
 {
   "Zano": {
     "Network": "mainnet",
@@ -107,30 +107,30 @@ Configure the plugin through BTCPay Server's plugin settings:
     "BlockPollingInterval": 3
   }
 }
-```
+\`\`\`
 
 ### Environment Variables
 You can also configure the plugin using environment variables:
 
-```bash
+\`\`\`bash
 # Zano Daemon RPC endpoint
 export ZANO_DAEMON_URI="http://37.27.100.59:10500"
 
 # Zano Wallet RPC endpoint  
 export ZANO_WALLET_DAEMON_URI="http://127.0.0.1:11233"
-```
+\`\`\`
 
 **Note**: Environment variables take precedence over configuration file settings.
 
 ### Zano Node Configuration
 Ensure your Zano node has RPC enabled:
 
-```bash
+\`\`\`bash
 # In zano.conf
 rpc-bind-ip=0.0.0.0
 rpc-bind-port=32348
 rpc-login=username:password
-```
+\`\`\`
 
 ## 🔧 Usage
 
@@ -160,10 +160,10 @@ The plugin automatically:
 
 ### Logs
 Monitor plugin activity through BTCPay Server logs:
-```bash
+\`\`\`bash
 # View plugin logs
 tail -f /var/log/btcpayserver/btcpayserver.log | grep Zano
-```
+\`\`\`
 
 ### Key Metrics
 - **Block Polling**: Every 3 seconds
@@ -176,12 +176,10 @@ tail -f /var/log/btcpayserver/btcpayserver.log | grep Zano
 ### Common Issues
 
 #### RPC Connection Failed
-```bash
+\`\`\`bash
 # Check Zano node status
-curl -X POST http://localhost:32348/json_rpc \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":"0","method":"getinfo"}'
-```
+curl -X POST http://localhost:32348/json_rpc   -H "Content-Type: application/json"   -d '{"jsonrpc":"2.0","id":"0","method":"getinfo"}'
+\`\`\`
 
 #### Plugin Not Loading
 - Verify .NET version compatibility
@@ -195,7 +193,7 @@ curl -X POST http://localhost:32348/json_rpc \
 
 ### Debug Mode
 Enable debug logging in plugin configuration:
-```json
+\`\`\`json
 {
   "Logging": {
     "LogLevel": {
@@ -203,17 +201,17 @@ Enable debug logging in plugin configuration:
     }
   }
 }
-```
+\`\`\`
 
 ## 🧪 Testing
 
 ### Testnet Setup
-```bash
+\`\`\`bash
 # Configure for testnet
 "Network": "testnet",
 "DaemonRpcUrl": "http://localhost:32348",
 "WalletRpcUrl": "http://localhost:32349"
-```
+\`\`\`
 
 ### Test Scenarios
 - Create test invoices
@@ -238,7 +236,7 @@ Enable debug logging in plugin configuration:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/zano-list/btcpayserver-zano-integration/blob/zano-plugin/LICENSE.md) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -248,9 +246,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/ZanoGitHub/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/ZanoGitHub/discussions)
-- **Documentation**: [Wiki](https://github.com/your-username/ZanoGitHub/wiki)
+- **Issues**: [GitHub Issues](https://github.com/zano-list/btcpayserver-zano-integration/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/zano-list/btcpayserver-zano-integration/discussions)
+- **Documentation**: [Wiki](https://github.com/zano-list/btcpayserver-zano-integration/wiki)
 
 ## 🔄 Version History
 
