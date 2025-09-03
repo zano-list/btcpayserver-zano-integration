@@ -98,7 +98,7 @@ public class ZanoPlugin : BaseBTCPayServerPlugin
             (ICheckoutCheatModeExtension)ActivatorUtilities.CreateInstance(provider, typeof(ZanoCheckoutCheatModeExtension), new object[] { network, pmi }));
 
         services.AddUIExtension("store-nav", "/Views/Zano/StoreNavZanoExtension.cshtml");
-        services.AddUIExtension("store-zano-wallets-nav", "/Views/Zano/StoreWalletsNavZanoExtension.cshtml");
+        services.AddUIExtension("store-wallets-nav", "/Views/Zano/StoreWalletsNavZanoExtension.cshtml");
         services.AddUIExtension("store-invoices-payments", "/Views/Zano/ViewZanoLikePaymentData.cshtml");
         services.AddSingleton<ISyncSummaryProvider, ZanoSyncSummaryProvider>();
     }
