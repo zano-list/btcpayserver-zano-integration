@@ -40,8 +40,6 @@ using Microsoft.Net.Http.Headers;
 using NBXplorer;
 using NicolasDorier.RateLimits;
 
-
-
 namespace BTCPayServer.Hosting
 {
     public class Startup
@@ -176,9 +174,9 @@ namespace BTCPayServer.Hosting
             .AddDataAnnotationsLocalization()
             .AddControllersAsServices();
 
-
-
-
+#if !RAZOR_COMPILE_ON_BUILD
+            mvcBuilder.AddRazorRuntimeCompilation();
+#endif
 
 
             services.AddServerSideBlazor().AddHubOptions(o =>

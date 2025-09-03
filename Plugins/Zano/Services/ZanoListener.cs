@@ -316,7 +316,7 @@ namespace BTCPayServer.Plugins.Zano.Services
                     {
                         var currentHeight = keyValuePair.Pi.CurrentHeight;
                         var confirmations = currentHeight - transfer.Height;
-                        if (confirmations > 2)
+                        if (confirmations >= 1)
                         {
 
                             transferProcessingTasks.Add(HandlePaymentData(cryptoCode, transfer.Subtransfers[0].Amount, transfer.TxHash, confirmations, currentHeight,

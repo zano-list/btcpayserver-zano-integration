@@ -27,18 +27,17 @@ namespace BTCPayServer.Services
     {
         public BTCPayNetworkJsonSerializerSettings(BTCPayNetworkProvider networkProvider, IEnumerable<IJsonConverterRegistration> jsonSerializers)
         {
-            foreach (var network in networkProvider.GetAll())
-               // /.OfType<BTCPayNetwork>())
+            foreach (var network in networkProvider.GetAll().OfType<BTCPayNetwork>())
             {
                 var serializer = new JsonSerializerSettings();
-                //foreach (var jsonSerializer in jsonSerializers)
-                //{
-                //    serializer.Converters.Add(jsonSerializer.CreateJsonConverter(network));
-                //}
-                //foreach (var converter in network.NBXplorerNetwork.JsonSerializerSettings.Converters)
-                //{
-                //    serializer.Converters.Add(converter);
-                //}
+                foreach (var jsonSerializer in jsonSerializers)
+                {
+                    serializer.Converters.Add(jsonSerializer.CreateJsonConverter(network));
+                }
+                foreach (var converter in network.NBXplorerNetwork.JsonSerializerSettings.Converters)
+                {
+                    serializer.Converters.Add(converter);
+                }
                 // TODO: Get rid of this serializer
                 _Serializers.Add(PayoutTypes.CHAIN.GetPayoutMethodId(network.CryptoCode), serializer);
                 _Serializers.Add(PayoutTypes.LN.GetPayoutMethodId(network.CryptoCode), serializer);

@@ -1,1 +1,0 @@
-{"Identifier":"BTCPayServer.Plugins.Zano","Name":"BTCPay Server: Zano support plugin","Version":"1.0.1.0","Description":"This plugin extends BTCPay Server to enable users to receive payments via Zano.","SystemPlugin":false,"Dependencies":[{"Identifier":"BTCPayServer","Condition":"\u003E=2.1.0"}]}

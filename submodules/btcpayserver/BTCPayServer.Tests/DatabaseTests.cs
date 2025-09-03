@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using BTCPayServer.Payments;
+using BTCPayServer.Services;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
 using NBitcoin;
@@ -18,6 +19,25 @@ namespace BTCPayServer.Tests
 
         public DatabaseTests(ITestOutputHelper helper):base(helper)
         {
+        }
+
+        [Fact]
+        public async Task CanConcurrentlyModifyWalletObject()
+        {
+            var tester = CreateDBTester();
+            await tester.MigrateUntil();
+            var walletRepo = tester.GetWalletRepository();
+
+            var wid = new WalletObjectId(new WalletId("AAA", "ddd"), "a", "b");
+            var all = Enumerable.Range(0, 10)
+#pragma warning disable CS0618 // Type or member is obsolete
+                .Select(i => walletRepo.ModifyWalletObjectData(wid, (o) => { o["idx"] = i; }))
+#pragma warning restore CS0618 // Type or member is obsolete
+                .ToArray();
+            foreach (var task in all)
+            {
+                await task;
+            }
         }
 
         [Fact]
@@ -46,7 +66,7 @@ namespace BTCPayServer.Tests
             }
 
             await conn.ExecuteAsync("""
-                INSERT INTO "Invoices" ("Id", "Created", "Status","Currency") VALUES 
+                INSERT INTO "Invoices" ("Id", "Created", "Status","Currency") VALUES
                 ('BTCOnly', NOW(), 'New', 'USD'),
                 ('LTCOnly', NOW(), 'New', 'USD'),
                 ('LTCAndBTC', NOW(), 'New', 'USD'),
@@ -133,7 +153,7 @@ namespace BTCPayServer.Tests
             var conn = ctx.Database.GetDbConnection();
             await conn.ExecuteAsync("INSERT INTO \"Invoices\" (\"Id\", \"Created\") VALUES ('i', NOW())");
             await conn.ExecuteAsync(
-                "INSERT INTO \"AddressInvoices\" VALUES ('aaa#BTC', 'i'),('bbb','i'),('ccc#BTC_LNU', 'i'),('ddd#XMR_ZanoLike', 'i'),('eee#ZEC_ZcashLike', 'i')");
+                "INSERT INTO \"AddressInvoices\" VALUES ('aaa#BTC', 'i'),('bbb','i'),('ccc#BTC_LNU', 'i'),('ddd#XMR_MoneroLike', 'i'),('eee#ZEC_ZcashLike', 'i')");
             await tester.ContinueMigration();
             foreach (var v in new[] { ("aaa", "BTC-CHAIN"), ("bbb", "BTC-CHAIN"), ("ddd", "XMR-CHAIN") , ("eee", "ZEC-CHAIN") })
             {

@@ -30,7 +30,7 @@ namespace BTCPayServer.Migrations
                 "Address" = (string_to_array("Address", '#'))[1],
                 "PaymentMethodId" = CASE WHEN (string_to_array("Address", '#'))[2] IS NULL THEN 'BTC-CHAIN'
                                          WHEN STRPOS((string_to_array("Address", '#'))[2], '_') = 0 THEN (string_to_array("Address", '#'))[2] || '-CHAIN'
-                                         WHEN STRPOS((string_to_array("Address", '#'))[2], '_ZanoLike') > 0 THEN replace((string_to_array("Address", '#'))[2],'_ZanoLike','-CHAIN')
+                                         WHEN STRPOS((string_to_array("Address", '#'))[2], '_MoneroLike') > 0 THEN replace((string_to_array("Address", '#'))[2],'_MoneroLike','-CHAIN')
                                          WHEN STRPOS((string_to_array("Address", '#'))[2], '_ZcashLike') > 0 THEN replace((string_to_array("Address", '#'))[2],'_ZcashLike','-CHAIN')
                                          ELSE '' END;
                 ALTER TABLE "AddressInvoices" DROP COLUMN IF EXISTS "CreatedTime";

@@ -28,7 +28,7 @@ public class ZanoPlugin : BaseBTCPayServerPlugin
 {
     public override IBTCPayServerPlugin.PluginDependency[] Dependencies { get; } =
     {
-        new IBTCPayServerPlugin.PluginDependency { Identifier = nameof(BTCPayServer), Condition = ">=2.1.0" }
+      //  new IBTCPayServerPlugin.PluginDependency { Identifier = nameof(BTCPayServer), Condition = ">=2.1.0" }
     };
 
     public override void Execute(IServiceCollection services)
@@ -49,7 +49,7 @@ public class ZanoPlugin : BaseBTCPayServerPlugin
         "ZANO_USD = zano(ZANO_USD)",
         "ZANO_EUR = zano(ZANO_EUR)"
     },
-            CryptoImagePath = "zano.svg",
+            CryptoImagePath = "imlegacy/zano.svg",
             UriScheme = "zano"
         };
 

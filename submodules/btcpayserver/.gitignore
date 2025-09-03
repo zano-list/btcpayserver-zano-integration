@@ -302,3 +302,11 @@ BTCPayServer/wwwroot/swagger/v1/openapi.json
 BTCPayServer/appsettings.dev.json
 BTCPayServer.Tests/monero_wallet
 /BTCPayServer.Tests/NewBlocks.bat
+create-zano-wallet.bat
+create-zano-wallet.ps1
+create-zano-wallet-download.ps1
+create-zano-wallet-simple.ps1
+docker-compose.btcpayserver.http.yml
+docker-compose.btcpayserver.yml
+DOCKER-README.md
+ZANO-WALLET-README.md

@@ -7,7 +7,7 @@
     <Version>1.0.1</Version>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+    <StaticWebAssetsEnabled>true</StaticWebAssetsEnabled>
     <PreserveCompilationContext>false</PreserveCompilationContext>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -25,17 +25,21 @@
 
   <!-- Deterministic build -->
   <ItemGroup>
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25" PrivateAssets="All" />
-    <PackageReference Include="DotNet.ReproducibleBuilds.Isolated" Version="1.2.25" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="BTCPayServer.Plugins.Zano.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="zano.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
