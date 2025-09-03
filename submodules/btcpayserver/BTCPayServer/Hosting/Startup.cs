@@ -174,9 +174,9 @@ namespace BTCPayServer.Hosting
             .AddDataAnnotationsLocalization()
             .AddControllersAsServices();
 
-#if !RAZOR_COMPILE_ON_BUILD
-            mvcBuilder.AddRazorRuntimeCompilation();
-#endif
+//#if !RAZOR_COMPILE_ON_BUILD
+//            mvcBuilder.AddRazorRuntimeCompilation();
+//#endif
 
 
             services.AddServerSideBlazor().AddHubOptions(o =>
