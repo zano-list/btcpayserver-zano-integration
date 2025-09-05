@@ -235,8 +235,11 @@ namespace BTCPayServer.Plugins.Zano.Services
 
         private async Task UpdatePaymentStates(string cryptoCode, InvoiceEntity[] invoices)
         {
+            _logger.LogInformation($"UpdatePaymentStates: Starting payment state update for {cryptoCode} with {invoices.Length} invoices");
+            
             if (!invoices.Any())
             {
+                _logger.LogDebug($"UpdatePaymentStates: No invoices to process for {cryptoCode}, returning early");
                 return;
             }
 
@@ -244,6 +247,8 @@ namespace BTCPayServer.Plugins.Zano.Services
             var network = _networkProvider.GetNetwork(cryptoCode);
             var paymentId = PaymentTypes.CHAIN.GetPaymentMethodId(network.CryptoCode);
             var handler = (ZanoLikePaymentMethodHandler)_handlers[paymentId];
+
+            _logger.LogDebug($"UpdatePaymentStates: Processing invoices for {cryptoCode}, paymentId: {paymentId}");
 
             //get all the required data in one list (invoice, its existing payments and the current payment method details)
             var expandedInvoices = invoices.Select(entity => (Invoice: entity,
@@ -261,23 +266,22 @@ namespace BTCPayServer.Plugins.Zano.Services
                 ));
 
             var existingPaymentData = expandedInvoices.SelectMany(tuple => tuple.ExistingPayments);
+            var existingPaymentCount = existingPaymentData.Count();
+            _logger.LogDebug($"UpdatePaymentStates: Found {existingPaymentCount} existing payments across all invoices");
 
-
-
+            _logger.LogDebug($"UpdatePaymentStates: Making RPC call to get_recent_txs_and_info2 for {cryptoCode}");
             var keyValuePair = await zanoWalletRpcClient.SendCommandAsync<GetTransfersRequest, GetTransfersResponse>(
                       "get_recent_txs_and_info2",
                       new GetTransfersRequest()
                       {
                           Count = 100,
-                          ExcludeMiningTxs = false,
-                          ExcludeUnconfirmed = true,
+                          ExcludeMiningTxs = true,
+                          ExcludeUnconfirmed = false,
                           Offset = 0,
                           Order = "FROM_END_TO_BEGIN",
                           UpdateProvisionInfo = true
                       });
-
-
-
+            _logger.LogDebug($"UpdatePaymentStates: RPC call completed, received {keyValuePair.Transfers?.Count ?? 0} transfers, current height: {keyValuePair.Pi?.CurrentHeight ?? 0}");
 
             var transferProcessingTasks = new List<Task>();
 
@@ -287,8 +291,11 @@ namespace BTCPayServer.Plugins.Zano.Services
 
             if (transfers.Count > 0 && expandedInvoices.Count() > 0)
             {
+                _logger.LogDebug($"UpdatePaymentStates: Processing {transfers.Count} transfers against {expandedInvoices.Count()} expanded invoices");
+                
                 foreach (var transfer in transfers)
                 {
+                    _logger.LogDebug($"UpdatePaymentStates: Processing transfer {transfer.TxHash} with PaymentId: {transfer.PaymentId}, Height: {transfer.Height}");
 
                     InvoiceEntity invoice = null;
                     var existingMatch = existingPaymentData.SingleOrDefault(tuple =>
@@ -298,44 +305,67 @@ namespace BTCPayServer.Plugins.Zano.Services
                     if (existingMatch.Invoice != null)
                     {
                         invoice = existingMatch.Invoice;
+                        _logger.LogDebug($"UpdatePaymentStates: Found existing payment match for transfer {transfer.TxHash}, invoice: {invoice.Id}");
                     }
                     else if (transfer.PaymentId != null)
                     {
                         var newMatch = expandedInvoices.SingleOrDefault(tuple =>
                                     tuple.Invoice.Addresses.Any(x => x.Address == transfer.PaymentId));
 
-
                         if (newMatch.Invoice == null)
                         {
+                            _logger.LogDebug($"UpdatePaymentStates: No invoice found for PaymentId {transfer.PaymentId}, skipping transfer {transfer.TxHash}");
                             continue;
                         }
 
                         invoice = newMatch.Invoice;
+                        _logger.LogDebug($"UpdatePaymentStates: Found new payment match for transfer {transfer.TxHash}, invoice: {invoice.Id}, PaymentId: {transfer.PaymentId}");
                     }
+                    else
+                    {
+                        _logger.LogDebug($"UpdatePaymentStates: Transfer {transfer.TxHash} has no PaymentId, skipping");
+                    }
+                    
                     if (invoice != null)
                     {
                         var currentHeight = keyValuePair.Pi.CurrentHeight;
                         var confirmations = currentHeight - transfer.Height;
-                        if (confirmations >= 1)
-                        {
-
-                            transferProcessingTasks.Add(HandlePaymentData(cryptoCode, transfer.Subtransfers[0].Amount, transfer.TxHash, confirmations, currentHeight,
-                               transfer.UnlockTime, invoice, updatedPaymentEntities));
-                        }
+                        _logger.LogDebug($"UpdatePaymentStates: Handling payment data for invoice {invoice.Id}, confirmations: {confirmations}, amount: {transfer.Subtransfers[0].Amount}");
+                        transferProcessingTasks.Add(HandlePaymentData(cryptoCode, transfer.Subtransfers[0].Amount, transfer.TxHash, confirmations, currentHeight,
+                            transfer.UnlockTime, invoice, updatedPaymentEntities));
                     }
                 };
             }
+            else
+            {
+                if (transfers.Count == 0)
+                    _logger.LogDebug($"UpdatePaymentStates: No transfers received from RPC call for {cryptoCode}");
+                if (expandedInvoices.Count() == 0)
+                    _logger.LogDebug($"UpdatePaymentStates: No expanded invoices to process for {cryptoCode}");
+            }
 
-            transferProcessingTasks.Add(
-                _paymentService.UpdatePayments(updatedPaymentEntities.Select(tuple => tuple.Item1).ToList()));
+            var paymentsToUpdate = updatedPaymentEntities.Select(tuple => tuple.Item1).ToList();
+            _logger.LogDebug($"UpdatePaymentStates: Updating {paymentsToUpdate.Count} payments for {cryptoCode}");
+            
+            transferProcessingTasks.Add(_paymentService.UpdatePayments(paymentsToUpdate));
             await Task.WhenAll(transferProcessingTasks);
-            foreach (var valueTuples in updatedPaymentEntities.GroupBy(entity => entity.Item2))
+            
+            _logger.LogDebug($"UpdatePaymentStates: All transfer processing tasks completed for {cryptoCode}");
+            
+            var invoiceGroups = updatedPaymentEntities.GroupBy(entity => entity.Item2);
+            var invoiceUpdateCount = 0;
+            
+            foreach (var valueTuples in invoiceGroups)
             {
                 if (valueTuples.Any())
                 {
+                    invoiceUpdateCount++;
+                    _logger.LogDebug($"UpdatePaymentStates: Publishing InvoiceNeedUpdateEvent for invoice {valueTuples.Key.Id} with {valueTuples.Count()} updated payments");
                     _eventAggregator.Publish(new InvoiceNeedUpdateEvent(valueTuples.Key.Id));
                 }
             }
+            
+            _logger.LogInformation($"UpdatePaymentStates: Completed for {cryptoCode} - Updated {paymentsToUpdate.Count} payments across {invoiceUpdateCount} invoices");
 
         }
 

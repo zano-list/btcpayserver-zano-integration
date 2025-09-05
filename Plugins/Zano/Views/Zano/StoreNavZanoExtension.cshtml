@@ -13,7 +13,3 @@
     var isActive = !string.IsNullOrEmpty(storeId) && ViewContext.RouteData.Values.TryGetValue("Controller", out var controller) && controller is not null && 
                    nameof(UIZanoLikeStoreController).StartsWith(controller.ToString() ?? string.Empty, StringComparison.InvariantCultureIgnoreCase);
 }
-@if (SignInManager.IsSignedIn(User) && ZanoLikeConfiguration.ZanoLikeConfigurationItems.Any())
-{
-    <a class="nav-link @(isActive ? "active" : string.Empty)" asp-route-storeId="@storeId" asp-action="GetStoreZanoLikePaymentMethods" asp-controller="UIZanoLikeStore">Zano</a>
-}
