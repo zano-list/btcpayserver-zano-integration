@@ -263,4 +263,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Note**: This plugin is designed for production use but should be thoroughly tested in your environment before deployment.
+**Note**: This plugin is designed for production use but should be thoroughly tested in your environment before deployment. 
